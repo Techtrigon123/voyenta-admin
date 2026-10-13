@@ -5,7 +5,7 @@ import { fail, ok, readJson } from "@/lib/http";
 
 type Ctx = { params: Promise<{ agentId: string }> };
 
-/** Reply to an agent's support chat. The reply appears in their Support page in the Voyenta app. */
+/** Reply to an agent's support chat. The reply appears in their Support page in the Vouchlio app. */
 export async function POST(req: Request, { params }: Ctx) {
   const { admin, response } = await requireApi("support.reply");
   if (response) return response;

@@ -223,7 +223,7 @@ export default function AgentActions({ agent, perms }: { agent: AgentInfo; perms
       </Modal>
 
       {/* Suspend */}
-      <Modal open={dialog === "suspend"} onOpenChange={(v) => !v && setDialog(null)} title={`Suspend ${agent.name}?`} description="The agent is signed out of Voyenta and can't sign in until you reactivate the account. Their data is kept.">
+      <Modal open={dialog === "suspend"} onOpenChange={(v) => !v && setDialog(null)} title={`Suspend ${agent.name}?`} description="The agent is signed out of Vouchlio and can't sign in until you reactivate the account. Their data is kept.">
         <Field label="Reason (recorded in the audit log)" htmlFor="sus-reason">
           <input id="sus-reason" value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls} maxLength={300} />
         </Field>

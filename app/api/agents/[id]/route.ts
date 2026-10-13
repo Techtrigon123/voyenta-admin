@@ -5,6 +5,7 @@ import { getAgent } from "@/lib/agents";
 import { audit } from "@/lib/audit";
 import { fail, ok, readJson } from "@/lib/http";
 import type { Permission } from "@/lib/permissions";
+import { hit, retryMessage } from "@/lib/rate-limit";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -19,7 +20,21 @@ const PERMISSION: Record<string, Permission> = {
   delete: "agents.delete",
 };
 
-const RESET_TTL_MS = 60 * 60 * 1000; // same 1 hour as the Voyenta app's own reset links
+/**
+ * Daily ceilings per admin for the riskiest actions, on top of the proxy's limits (which can't
+ * see the action in the body). A real working day stays well under these; a stolen session or a
+ * mistake in a loop can't take over, delete or re-email agents in bulk.
+ */
+const ACTION_DAILY_LIMIT: Partial<Record<string, number>> = {
+  reset_link: 30,
+  unlock: 50,
+  suspend: 30,
+  plan: 50,
+  email: 20,
+  delete: 10,
+};
+
+const RESET_TTL_MS = 60 * 60 * 1000; // same 1 hour as the Vouchlio app's own reset links
 
 /** Every change to an agent goes through here: one permission per action, every change audited. */
 export async function POST(req: Request, { params }: Ctx) {
@@ -32,6 +47,12 @@ export async function POST(req: Request, { params }: Ctx) {
   const { admin, response } = await requireApi(permission);
   if (response) return response;
   if (!isUuid(id)) return fail("Agent not found.", 404);
+
+  const cap = ACTION_DAILY_LIMIT[action];
+  if (cap) {
+    const limit = await hit(`admin:day:agent-${action}:${admin.id}`, cap, 24 * 60 * 60);
+    if (!limit.allowed) return fail(retryMessage(limit.resetIn), 429, "RATE_LIMITED");
+  }
 
   try {
     const agent = await getAgent(id);
@@ -74,7 +95,7 @@ export async function POST(req: Request, { params }: Ctx) {
 
       case "suspend": {
         const suspend = body.suspended === true;
-        // Reactivated accounts start as Inactive; the Voyenta app makes them Active again on their next activity.
+        // Reactivated accounts start as Inactive; the Vouchlio app makes them Active again on their next activity.
         const status = suspend ? "SUSPENDED" : "INACTIVE";
         await users().update({ status }).eq("id", agent.id);
         await audit(admin, suspend ? "agent.suspend" : "agent.reactivate", target, { before: agent.status, after: status, reason: String(body.reason ?? "").slice(0, 300) || undefined });

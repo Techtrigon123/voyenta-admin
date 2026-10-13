@@ -12,7 +12,7 @@ export const PERMISSIONS = {
   "payments.view": "View plan payments and proofs",
   "payments.check": "Mark payment proofs as checked",
   "payments.decide": "Approve or reject plan payments",
-  "payments.refund": "Record refunds",
+  "payments.refund": "Issue refunds (online payments through Razorpay) and record UPI refunds",
   // Agents
   "agents.view": "Search and view agent profiles",
   "agents.verify": "Check agent profile details (first review)",

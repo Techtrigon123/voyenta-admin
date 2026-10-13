@@ -1,11 +1,11 @@
-# Voyenta Admin
+# Vouchlio Admin
 
-The admin portal for Voyenta. It's a separate Next.js app that shares the Voyenta app's Supabase database. Run it locally on port 3001, or deploy it to its own address such as `admin.voyenta.com`.
+The admin portal for Vouchlio. It's a separate Next.js app that shares the Vouchlio app's Supabase database. Run it locally on port 3001, or deploy it to its own address such as `admin.vouchlio.com`.
 
 ## Setup
 
 1. **Database.** In the Supabase SQL Editor, run `checkin-app/supabase/migrations/0006_admin_portal.sql`. Migrations 0004 and 0005 must already be in place.
-2. **Environment.** Copy `.env.example` to `.env.local` and fill it in. `ADMIN_SESSION_SECRET` must be different from the Voyenta app's `JWT_SECRET`.
+2. **Environment.** Copy `.env.example` to `.env.local` and fill it in. `ADMIN_SESSION_SECRET` must be different from the Vouchlio app's `JWT_SECRET`.
 3. **Install and run:**
    ```
    npm install

@@ -2,10 +2,13 @@
 
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { KeyRound, Lock, ShieldCheck, Smartphone } from "lucide-react";
 import { api } from "@/lib/client";
 import { Field, Spinner, inputCls, primaryBtn } from "@/components/ui";
+import Slipstream from "@/components/ui/background-ascii-flow";
+import LegalFooter from "@/components/legal/LegalFooter";
 
 type Step = "password" | "2fa" | "setup";
 
@@ -66,19 +69,21 @@ export default function LoginPage() {
     <main className="grid min-h-screen lg:grid-cols-2">
       {/* Brand panel */}
       <div className="relative hidden overflow-hidden bg-ink p-12 text-white lg:flex lg:flex-col lg:justify-between">
+        {/* The panel is always ink, so the flow uses fixed violet tones rather than the theme colours. */}
+        <Slipstream className="absolute inset-0 text-brand-neon opacity-70 [--ns-muted:var(--color-brand-700)]" />
         <div className="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-brand-500/30 blur-3xl" aria-hidden />
         <div className="pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-brand-neon/10 blur-3xl" aria-hidden />
         <div className="relative flex items-center gap-3">
           <span className="rounded-xl bg-[#ffffff] px-2 py-1.5">
-            <Image src="/voyenta-logo-mark.png" alt="" width={234} height={160} className="h-7 w-auto" priority />
+            <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-7 w-auto" priority />
           </span>
           <span className="text-lg font-bold">
-            Voyenta <span className="text-brand-neon">Admin</span>
+            Vouchlio <span className="text-brand-neon">Admin</span>
           </span>
         </div>
         <div className="relative">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-neon">Control centre</p>
-          <h1 className="mt-3 max-w-md text-4xl font-bold leading-tight">Run Voyenta with confidence.</h1>
+          <h1 className="mt-3 max-w-md text-4xl font-bold leading-tight">Run Vouchlio with confidence.</h1>
           <p className="mt-4 max-w-md text-neutral-400">Review payments, support agents and keep every account healthy — with every action recorded.</p>
         </div>
         <ul className="relative space-y-3 text-sm text-neutral-300">
@@ -95,14 +100,15 @@ export default function LoginPage() {
       </div>
 
       {/* Form */}
-      <div className="flex items-center justify-center px-4 py-12">
+      <div className="flex flex-col">
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="anim-rise w-full max-w-sm">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <span className="rounded-xl bg-[#ffffff] px-2 py-1.5 ring-1 ring-[var(--border)]">
-              <Image src="/voyenta-logo-mark.png" alt="" width={234} height={160} className="h-6 w-auto" />
+              <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-6 w-auto" />
             </span>
             <span className="font-bold">
-              Voyenta <span className="text-brand-600 dark:text-brand-neon">Admin</span>
+              Vouchlio <span className="text-brand-600 dark:text-brand-neon">Admin</span>
             </span>
           </div>
 
@@ -110,7 +116,7 @@ export default function LoginPage() {
             <form onSubmit={submitPassword} className="space-y-4" noValidate>
               <div>
                 <h2 className="text-2xl font-bold tracking-tight">Admin sign in</h2>
-                <p className="mt-1 text-sm text-[var(--muted-foreground)]">For Voyenta staff only. Agents sign in on the Voyenta app.</p>
+                <p className="mt-1 text-sm text-[var(--muted-foreground)]">For Vouchlio staff only. Agents sign in on the Vouchlio app.</p>
               </div>
               <Field label="Email" htmlFor="email">
                 <input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} />
@@ -122,6 +128,11 @@ export default function LoginPage() {
               <button type="submit" disabled={busy || !email || !password} className={`${primaryBtn} w-full`}>
                 {busy ? <Spinner /> : null} Continue
               </button>
+              <p className="text-center text-xs text-[var(--muted-foreground)]">
+                By signing in you agree to the{" "}
+                <Link href="/terms" className="font-medium text-brand-600 hover:underline dark:text-brand-neon">Terms of Use</Link> and{" "}
+                <Link href="/privacy" className="font-medium text-brand-600 hover:underline dark:text-brand-neon">Privacy Policy</Link>.
+              </p>
             </form>
           ) : (
             <form onSubmit={submitCode} className="space-y-4" noValidate>
@@ -133,7 +144,7 @@ export default function LoginPage() {
                 <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                   {step === "setup"
                     ? "Scan this QR code with an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password…), then enter the 6-digit code it shows."
-                    : "Open your authenticator app and enter the 6-digit code for Voyenta Admin."}
+                    : "Open your authenticator app and enter the 6-digit code for Vouchlio Admin."}
                 </p>
               </div>
               {step === "setup" ? (
@@ -173,6 +184,8 @@ export default function LoginPage() {
             </form>
           )}
         </div>
+      </div>
+      <LegalFooter />
       </div>
     </main>
   );

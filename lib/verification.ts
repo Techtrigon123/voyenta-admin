@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 
 /**
- * Agent profile review. Field keys and hashing MUST match the Voyenta app
+ * Agent profile review. Field keys and hashing MUST match the Vouchlio app
  * (checkin-app/lib/agent/verification.ts + verification-shared.ts) so both sides agree on what changed.
  */
 

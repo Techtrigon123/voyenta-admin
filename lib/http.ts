@@ -13,6 +13,13 @@ export function fail(message: string, status = 400, code?: string) {
  * then the right-most X-Forwarded-For entry (the one added by our own proxy).
  */
 export function clientIp(headers: Headers): string {
+  // On Vercel, trust only Vercel's own headers: it overwrites them on every request, while any
+  // other header (cf-connecting-ip included) arrives exactly as the client sent it, so an attacker
+  // could rotate it on every request to dodge the per-IP limits.
+  if (process.env.VERCEL) {
+    const ip = headers.get("x-vercel-forwarded-for") ?? headers.get("x-real-ip");
+    return ip?.split(",")[0].trim() || "unknown";
+  }
   const platform = headers.get("cf-connecting-ip") ?? headers.get("x-vercel-forwarded-for") ?? headers.get("x-real-ip");
   if (platform) return platform.split(",")[0].trim();
   const fwd = headers.get("x-forwarded-for");

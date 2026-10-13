@@ -44,7 +44,7 @@ export async function GET(_req: Request, { params }: Ctx) {
   return new Response(JSON.stringify(file, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": `attachment; filename="voyenta-agent-${safeName}.json"`,
+      "Content-Disposition": `attachment; filename="vouchlio-agent-${safeName}.json"`,
       "Cache-Control": "no-store",
     },
   });

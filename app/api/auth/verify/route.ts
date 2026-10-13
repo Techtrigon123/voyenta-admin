@@ -15,6 +15,9 @@ export async function POST(req: Request) {
 
     const limit = await hit(`admin:totp:${admin.id}`, 5, 5 * 60);
     if (!limit.allowed) return fail("Too many wrong codes. Wait a few minutes and try again.", 429, "RATE_LIMITED");
+    // Daily ceiling as well: 5 tries every 5 minutes would still allow ~1,400 guesses a day.
+    const daily = await hit(`admin:totp:day:${admin.id}`, 30, 24 * 60 * 60);
+    if (!daily.allowed) return fail("Too many code attempts today. Ask a master admin, or try again tomorrow.", 429, "RATE_LIMITED");
 
     const code = String((await readJson(req)).code ?? "");
     const secret = admin.totp_secret ? decryptSecret(admin.totp_secret) : null;

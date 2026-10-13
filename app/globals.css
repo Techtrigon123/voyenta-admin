@@ -2,7 +2,7 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
-/* Same structure as the Voyenta app: ink black primary + one bright accent.
+/* Same structure as the Vouchlio app: ink black primary + one bright accent.
    The admin console swaps the app's neon green for electric violet. */
 :root {
   --background: #f7f7fb;
@@ -19,6 +19,7 @@
   --radius: 0.5rem;
   --sidebar: #0a0a0a;
   --sidebar-fg: #d4d4d8;
+  --ns-muted: #4d4d4d; /* ambient glyphs of the ASCII flow background */
 }
 
 html[data-theme="dark"] {
@@ -33,6 +34,7 @@ html[data-theme="dark"] {
   --border: #26262f;
   --input: #2c2c36;
   --sidebar: #050507;
+  --ns-muted: #8f8f8f;
   color-scheme: dark;
 }
 
@@ -95,6 +97,77 @@ html[data-theme="dark"] .btn-glow {
   color: #0a0a0a;
 }
 
+/* ─── Glow cards (same mechanism as the Vouchlio app's .btn-glow) ──────────
+   The 1px border lights up from the bottom edge and a soft glow spreads
+   beneath the card; both widen slowly (1.2s) on hover. Unlayered so it wins
+   over the bg-/border- utilities on the card. */
+@property --card-stroke-w { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+@property --card-glow-w { syntax: "<percentage>"; inherits: true; initial-value: 0%; }
+
+.card-glow {
+  --glow-color: 124 77 255; /* brand-500 */
+  --card-stroke-w: 0%;
+  --card-glow-w: 0%;
+  position: relative;
+  isolation: isolate;
+  border-color: transparent;
+  /* Stroke: the transparent border shows the glow gradient over the normal border colour. */
+  background:
+    radial-gradient(var(--card-stroke-w) 50% at 50% 100%, rgb(var(--glow-color)) 0%, rgb(var(--glow-color) / 0) 100%) border-box,
+    linear-gradient(var(--border), var(--border)) border-box;
+  transition: --card-stroke-w 1200ms ease-in-out, --card-glow-w 1200ms ease-in-out;
+}
+/* Fill (inside the stroke) */
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--card);
+  pointer-events: none;
+}
+/* Soft glow under the bottom edge */
+.card-glow::after {
+  content: "";
+  position: absolute;
+  inset: 40% 6% -10px 6%;
+  z-index: -2;
+  border-radius: inherit;
+  background: radial-gradient(var(--card-glow-w) 70% at 50% 100%, rgb(var(--glow-color) / 0.6) 0%, rgb(var(--glow-color) / 0.2) 45%, rgb(var(--glow-color) / 0) 100%);
+  filter: blur(14px);
+  pointer-events: none;
+}
+.card-glow:hover {
+  --card-stroke-w: 60%;
+  --card-glow-w: 60%;
+}
+html[data-theme="dark"] .card-glow {
+  --glow-color: 182 156 255; /* brand-neon */
+}
+
+/* Body text on the Privacy Policy and Terms of Use (components/legal/LegalPage.tsx) */
+.legal-body ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+}
+.legal-body li + li {
+  margin-top: 0.5rem;
+}
+.legal-body strong {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.legal-body a {
+  font-weight: 500;
+  color: var(--color-brand-600);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+html[data-theme="dark"] .legal-body a {
+  color: var(--color-brand-neon);
+}
+
 /* Skeleton shimmer */
 .skeleton {
   background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);
@@ -122,4 +195,30 @@ html[data-theme="dark"] .btn-glow {
   .skeleton {
     animation: none;
   }
+}
+
+/* ── Notification bell (components/NotificationBell.tsx) ─────────────────
+   A short swing from the top of the bell when something new arrives, and a pop on the badge. */
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0); }
+  10% { transform: rotate(16deg); }
+  20% { transform: rotate(-14deg); }
+  30% { transform: rotate(11deg); }
+  40% { transform: rotate(-8deg); }
+  50% { transform: rotate(5deg); }
+  60% { transform: rotate(-3deg); }
+  70% { transform: rotate(1deg); }
+}
+.bell-ring {
+  transform-origin: 50% 8%;
+  animation: bell-ring 1.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes badge-pop {
+  0% { transform: scale(0.4); opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.badge-pop { animation: badge-pop 0.35s ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .bell-ring, .badge-pop { animation: none; }
 }

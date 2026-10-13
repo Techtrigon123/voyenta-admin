@@ -7,11 +7,12 @@ import { api } from "@/lib/client";
 import { Card, CardTitle, Field, Spinner, inputCls, primaryBtn } from "@/components/ui";
 import type { Settings } from "@/lib/settings";
 
-export default function SettingsForms({ initial }: { initial: Settings }) {
+export default function SettingsForms({ initial, razorpayReady }: { initial: Settings; razorpayReady: boolean }) {
   const router = useRouter();
   const [payments, setPayments] = useState(initial.payments);
   const [pricing, setPricing] = useState(initial.pricing);
   const [ai, setAi] = useState(initial.ai);
+  const [support, setSupport] = useState(initial.support);
   const [busy, setBusy] = useState<string | null>(null);
 
   const save = async (key: keyof Settings, value: unknown) => {
@@ -28,8 +29,8 @@ export default function SettingsForms({ initial }: { initial: Settings }) {
   return (
     <div className="grid gap-6 lg:grid-cols-2">
       <Card>
-        <CardTitle>Payment details</CardTitle>
-        <p className="mb-4 text-sm text-[var(--muted-foreground)]">Agents pay to this UPI ID at checkout (the QR code is built from it). Leave empty to use the app&apos;s environment setting.</p>
+        <CardTitle>Payments</CardTitle>
+        <p className="mb-4 text-sm text-[var(--muted-foreground)]">Choose how agents can pay for Gold and Platinum. Online payments activate the plan instantly; UPI proofs wait for your team to check them.</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -37,11 +38,32 @@ export default function SettingsForms({ initial }: { initial: Settings }) {
           }}
           className="space-y-3"
         >
+          <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3 text-sm">
+            <input type="checkbox" checked={payments.onlineEnabled} onChange={(e) => setPayments({ ...payments, onlineEnabled: e.target.checked })} className="mt-0.5" />
+            <span>
+              <span className="font-medium">Online payments (Razorpay)</span>
+              <span className="block text-xs text-[var(--muted-foreground)]">
+                UPI, cards, net banking and wallets.{" "}
+                {razorpayReady ? (
+                  <span className="text-emerald-600 dark:text-emerald-400">Razorpay keys are set on this portal.</span>
+                ) : (
+                  <span className="text-amber-600 dark:text-amber-400">Razorpay keys aren&apos;t set on this portal yet, so refunds and lookups won&apos;t work. Agents see online checkout only once the keys are set in the Vouchlio app too.</span>
+                )}
+              </span>
+            </span>
+          </label>
+          <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3 text-sm">
+            <input type="checkbox" checked={payments.manualUpi} onChange={(e) => setPayments({ ...payments, manualUpi: e.target.checked })} className="mt-0.5" />
+            <span>
+              <span className="font-medium">UPI with payment proof</span>
+              <span className="block text-xs text-[var(--muted-foreground)]">Agents scan your UPI QR and upload a screenshot for review. Uses the UPI ID below.</span>
+            </span>
+          </label>
           <Field label="UPI ID" htmlFor="upi">
             <input id="upi" value={payments.upiId} onChange={(e) => setPayments({ ...payments, upiId: e.target.value })} placeholder="yourbusiness@bank" className={inputCls} />
           </Field>
           <Field label="Payee name" htmlFor="payee">
-            <input id="payee" value={payments.payeeName} onChange={(e) => setPayments({ ...payments, payeeName: e.target.value })} placeholder="Voyenta" maxLength={80} className={inputCls} />
+            <input id="payee" value={payments.payeeName} onChange={(e) => setPayments({ ...payments, payeeName: e.target.value })} placeholder="Vouchlio" maxLength={80} className={inputCls} />
           </Field>
           <button type="submit" disabled={busy === "payments"} className={primaryBtn}>{busy === "payments" ? <Spinner /> : null} Save payment details</button>
         </form>
@@ -110,6 +132,41 @@ export default function SettingsForms({ initial }: { initial: Settings }) {
             </Field>
           </div>
           <button type="submit" disabled={busy === "ai"} className={primaryBtn}>{busy === "ai" ? <Spinner /> : null} Save AI limits</button>
+        </form>
+      </Card>
+
+      <Card className="lg:col-span-2">
+        <CardTitle>Support options</CardTitle>
+        <p className="mb-4 text-sm text-[var(--muted-foreground)]">What agents see in the Support menu. Switching an option off hides it and stops new requests at once; existing tickets and callbacks stay in your queues.</p>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void save("support", support);
+          }}
+          className="space-y-4"
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                ["liveChat", "Live chat", "Real-time chat in Support chats"],
+                ["tickets", "Support tickets", "Written requests with a reply thread"],
+                ["bugReports", "Bug reports", "Screenshot + marked issue, opened as a ticket"],
+                ["callbacks", "Callback requests", "Agents book a call at a preferred time"],
+              ] as const
+            ).map(([k, label, hint]) => (
+              <label key={k} className="flex items-center gap-3 rounded-xl border border-[var(--border)] p-3 text-sm">
+                <input type="checkbox" checked={support[k]} onChange={(e) => setSupport({ ...support, [k]: e.target.checked })} />
+                <span>
+                  <strong>{label} — {support[k] ? "on" : "off"}</strong>
+                  <span className="block text-xs text-[var(--muted-foreground)]">{hint}</span>
+                </span>
+              </label>
+            ))}
+          </div>
+          <Field label="Callback hours (shown to agents)" htmlFor="cb-hours">
+            <input id="cb-hours" value={support.callbackHours} onChange={(e) => setSupport({ ...support, callbackHours: e.target.value })} maxLength={80} placeholder="Mon–Sat, 10 am – 7 pm IST" className={inputCls} />
+          </Field>
+          <button type="submit" disabled={busy === "support"} className={primaryBtn}>{busy === "support" ? <Spinner /> : null} Save support options</button>
         </form>
       </Card>
     </div>

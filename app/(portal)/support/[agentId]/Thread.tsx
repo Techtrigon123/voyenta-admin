@@ -52,7 +52,7 @@ export default function Thread({ agentId, initial }: { agentId: string; initial:
             >
               <p className="whitespace-pre-wrap break-words">{m.body}</p>
               <p className={cn("mt-1 text-[10px]", m.from === "support" ? "text-white/60" : "text-[var(--muted-foreground)]")}>
-                {m.from === "support" ? "Voyenta support" : "Agent"} · {formatDate(m.created_at, true)}
+                {m.from === "support" ? "Vouchlio support" : "Agent"} · {formatDate(m.created_at, true)}
               </p>
             </div>
           </div>

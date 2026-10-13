@@ -2,6 +2,7 @@
 import React from "react";
 import { Loader2, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BackButton } from "@/components/BackButton";
 
 export const primaryBtn =
   "btn-glow inline-flex h-10 items-center justify-center gap-2 rounded-lg px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50";
@@ -12,12 +13,19 @@ export const dangerBtn =
 export const inputCls =
   "h-10 w-full rounded-lg border border-[var(--input)] bg-[var(--card)] px-3 text-sm text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)] focus:border-brand-400 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900";
 
-export function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: React.ReactNode }) {
+/**
+ * Page title row. `back` is where the back button goes when there's no earlier portal page to
+ * return to (opened from a bookmark or a new tab); it defaults to the overview, and `false` hides it.
+ */
+export function PageHeader({ title, description, actions, back = "/" }: { title: string; description?: string; actions?: React.ReactNode; back?: string | false }) {
   return (
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {description ? <p className="mt-1 text-sm text-[var(--muted-foreground)]">{description}</p> : null}
+      <div className="min-w-0">
+        <div className="flex items-center gap-3">
+          {back ? <BackButton fallback={back} /> : null}
+          <h1 className="min-w-0 text-2xl font-bold tracking-tight">{title}</h1>
+        </div>
+        {description ? <p className={cn("mt-1 text-sm text-[var(--muted-foreground)]", back && "pl-12")}>{description}</p> : null}
       </div>
       {actions ? <div className="flex flex-wrap gap-2">{actions}</div> : null}
     </div>
@@ -25,7 +33,7 @@ export function PageHeader({ title, description, actions }: { title: string; des
 }
 
 export function Card({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <section className={cn("rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5", className)}>{children}</section>;
+  return <section className={cn("card-glow rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5", className)}>{children}</section>;
 }
 
 export function CardTitle({ children, hint }: { children: React.ReactNode; hint?: React.ReactNode }) {
@@ -54,7 +62,7 @@ export function Badge({ children, tone = "neutral", className }: { children: Rea
 export function StatCard({ label, value, hint, icon: Icon, tone = "brand" }: { label: string; value: React.ReactNode; hint?: string; icon: LucideIcon; tone?: "brand" | "amber" | "green" | "red" }) {
   const ring = { brand: "bg-brand-100 text-brand-700 dark:bg-brand-950 dark:text-brand-300", amber: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300", green: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300", red: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300" }[tone];
   return (
-    <div className="anim-rise rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
+    <div className="card-glow anim-rise rounded-2xl border border-[var(--border)] bg-[var(--card)] p-4">
       <div className="flex items-center justify-between">
         <p className="text-xs font-medium text-[var(--muted-foreground)]">{label}</p>
         <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg", ring)}>

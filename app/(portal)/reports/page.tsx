@@ -80,7 +80,7 @@ export default async function ReportsPage() {
 
   return (
     <>
-      <PageHeader title="Reports" description={revenue ? "Activity, plans and revenue." : "Activity and usage across Voyenta."} />
+      <PageHeader title="Reports" description={revenue ? "Activity, plans and revenue." : "Activity and usage across Vouchlio."} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

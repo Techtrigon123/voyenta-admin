@@ -1,7 +1,7 @@
 import { requireApi } from "@/lib/auth/guard";
 import { audit } from "@/lib/audit";
 import { fail, ok, readJson } from "@/lib/http";
-import { getSettings, saveSetting, type AiSettings, type PaymentSettings } from "@/lib/settings";
+import { getSettings, saveSetting, type AiSettings, type PaymentSettings, type SupportSettings } from "@/lib/settings";
 import type { Prices } from "@/lib/plans";
 
 const money = (v: unknown, max: number): number | null => {
@@ -9,7 +9,7 @@ const money = (v: unknown, max: number): number | null => {
   return Number.isFinite(n) && n >= 0 && n <= max ? Math.round(n * 100) / 100 : null;
 };
 
-/** Master only. Body: { key: "payments" | "pricing" | "ai", value } */
+/** Master only. Body: { key: "payments" | "pricing" | "ai" | "support", value } */
 export async function POST(req: Request) {
   const { admin, response } = await requireApi("settings.manage");
   if (response) return response;
@@ -24,7 +24,10 @@ export async function POST(req: Request) {
       const upiId = String(v.upiId ?? "").trim();
       const payeeName = String(v.payeeName ?? "").trim().slice(0, 80);
       if (upiId && !/^[a-zA-Z0-9._-]{2,256}@[a-zA-Z]{2,64}$/.test(upiId)) return fail("Enter a valid UPI ID, like yourname@bank.");
-      const value: PaymentSettings = { upiId, payeeName };
+      const onlineEnabled = v.onlineEnabled !== false;
+      const manualUpi = v.manualUpi !== false;
+      if (!onlineEnabled && !manualUpi) return fail("Keep at least one way to pay switched on, or agents can't upgrade.");
+      const value: PaymentSettings = { upiId, payeeName, onlineEnabled, manualUpi };
       await saveSetting("payments", value, admin.id);
       await audit(admin, "settings.payments", { type: "settings", id: "payments" }, { before: before.payments, after: value });
       return ok(true, "Payment details saved. Checkout uses them right away.");
@@ -61,6 +64,20 @@ export async function POST(req: Request) {
       await saveSetting("ai", value, admin.id);
       await audit(admin, "settings.ai", { type: "settings", id: "ai" }, { before: before.ai, after: value });
       return ok(true, value.enabled ? "AI limits saved." : "Upload auto-fill switched off for everyone.");
+    }
+
+    if (key === "support") {
+      const value: SupportSettings = {
+        liveChat: v.liveChat !== false,
+        tickets: v.tickets !== false,
+        bugReports: v.bugReports !== false,
+        callbacks: v.callbacks !== false,
+        callbackHours: String(v.callbackHours ?? "").replace(/\s+/g, " ").trim().slice(0, 80),
+      };
+      if (!value.callbackHours) return fail("Enter the hours you take callback calls, e.g. Mon–Sat, 10 am – 7 pm IST.");
+      await saveSetting("support", value, admin.id);
+      await audit(admin, "settings.support", { type: "settings", id: "support" }, { before: before.support, after: value });
+      return ok(true, "Support options saved. Agents see the change within a minute.");
     }
 
     return fail("Unknown setting.");

@@ -75,8 +75,8 @@ export function verifyTotp(secret: string, code: string, lastStep: number, now =
 }
 
 export function otpauthUrl(secret: string, email: string): string {
-  const label = encodeURIComponent(`Voyenta Admin:${email}`);
-  return `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent("Voyenta Admin")}&digits=${DIGITS}&period=${STEP_SECONDS}`;
+  const label = encodeURIComponent(`Vouchlio Admin:${email}`);
+  return `otpauth://totp/${label}?secret=${secret}&issuer=${encodeURIComponent("Vouchlio Admin")}&digits=${DIGITS}&period=${STEP_SECONDS}`;
 }
 
 function key(): Buffer {

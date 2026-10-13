@@ -1,5 +1,5 @@
 /**
- * Plan rules mirrored from the Voyenta app (checkin-app/lib/agent/plans.ts). Keep the two in sync:
+ * Plan rules mirrored from the Vouchlio app (checkin-app/lib/agent/plans.ts). Keep the two in sync:
  * the app enforces them; the admin portal uses them to show plan status and default prices.
  */
 

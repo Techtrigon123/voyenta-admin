@@ -48,7 +48,7 @@ export default async function OverviewPage() {
 
   return (
     <>
-      <PageHeader title={`Hello, ${admin.name.split(" ")[0]}`} description={admin.role === "master" ? "Everything happening on Voyenta, at a glance." : "Your support and operations work for today."} />
+      <PageHeader back={false} title={`Hello, ${admin.name.split(" ")[0]}`} description={admin.role === "master" ? "Everything happening on Vouchlio, at a glance." : "Your support and operations work for today."} />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Agents" value={agents.length.toLocaleString("en-IN")} hint={`${agents.filter((a) => a.created_at >= since7).length} joined this week`} icon={Users} />

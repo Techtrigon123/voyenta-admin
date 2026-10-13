@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BadgeCheck, FileText, Lock, MessageCircle } from "lucide-react";
+import { BadgeCheck, FileText, Lock, MessageCircle } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 import { db } from "@/lib/db";
 import { isUuid, requirePage } from "@/lib/auth/guard";
 import { can } from "@/lib/permissions";
@@ -27,7 +28,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
     db().from("agent_documents").select("created_at").eq("agent_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     db().from("customers").select("id", { count: "exact", head: true }).eq("agent_id", id),
     can(admin, "payments.view")
-      ? db().from("plan_payments").select("id,plan_id,amount_inr,status,created_at").eq("agent_id", id).order("created_at", { ascending: false }).limit(10)
+      ? db().from("plan_payments").select("id,plan_id,amount_inr,status,created_at").eq("agent_id", id).neq("status", "created").order("created_at", { ascending: false }).limit(10)
       : Promise.resolve({ data: [] }),
     db().from("agent_notes").select("id,admin_name,body,created_at").eq("agent_id", id).order("created_at", { ascending: false }).limit(50),
     db().from("support_messages").select("from,created_at").eq("agent_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
@@ -53,12 +54,9 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
 
   return (
     <>
-      <Link href="/agents" className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-        <ArrowLeft className="h-4 w-4" /> All agents
-      </Link>
-
       <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
+          <BackButton fallback="/agents" label="Back to agents" />
           <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-ink text-xl font-bold text-brand-neon">{display.slice(0, 1).toUpperCase()}</span>
           <div className="min-w-0">
             <h1 className="flex items-center gap-2 truncate text-xl font-bold">

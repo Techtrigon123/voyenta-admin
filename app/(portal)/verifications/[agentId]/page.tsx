@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 import { db } from "@/lib/db";
 import { isUuid, requirePage } from "@/lib/auth/guard";
 import { can } from "@/lib/permissions";
@@ -46,10 +45,8 @@ export default async function ReviewPage({ params }: { params: Promise<{ agentId
 
   return (
     <>
-      <Link href="/verifications" className="mb-4 inline-flex items-center gap-1 text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)]">
-        <ArrowLeft className="h-4 w-4" /> All reviews
-      </Link>
       <PageHeader
+        back="/verifications"
         title={value("companyName") || value("name") || "Agent"}
         description={`${r.email as string} · joined ${formatDate(r.created_at as string)}`}
         actions={<Link href={`/agents/${agentId}`} className="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-300">Agent page →</Link>}

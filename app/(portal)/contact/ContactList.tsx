@@ -52,7 +52,7 @@ export default function ContactList({ items }: { items: ContactItem[] }) {
           <p className="mt-3 whitespace-pre-wrap rounded-xl bg-[var(--muted)] p-3 text-sm">{m.message}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             <a
-              href={`mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent("Re: your message to Voyenta")}`}
+              href={`mailto:${encodeURIComponent(m.email)}?subject=${encodeURIComponent("Re: your message to Vouchlio")}`}
               className={secondaryBtn}
               onClick={() => {
                 if (m.status === "new") void setStatus(m.id, "replied");

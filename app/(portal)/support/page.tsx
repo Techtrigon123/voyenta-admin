@@ -27,7 +27,7 @@ export default async function SupportPage() {
     <>
       <PageHeader title="Support chats" description={waiting ? `${waiting} agent${waiting === 1 ? " is" : "s are"} waiting for a reply.` : "Every agent has an answer."} />
       {list.length === 0 ? (
-        <EmptyState icon={MessageCircle} title="No support chats yet" text="When agents write from the Support page in Voyenta, their messages land here." />
+        <EmptyState icon={MessageCircle} title="No support chats yet" text="When agents write from the Support page in Vouchlio, their messages land here." />
       ) : (
         <ul className="divide-y divide-[var(--border)] overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--card)]">
           {list.map((t) => {

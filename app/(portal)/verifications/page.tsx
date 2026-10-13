@@ -4,8 +4,9 @@ import { db } from "@/lib/db";
 import { requirePage } from "@/lib/auth/guard";
 import { can } from "@/lib/permissions";
 import { REVIEW_FIELDS, STATUS_LABEL, type ReviewField, type VerificationStatus } from "@/lib/verification";
-import { cn, timeAgo } from "@/lib/utils";
+import { timeAgo } from "@/lib/utils";
 import { Badge, EmptyState, PageHeader, type Tone } from "@/components/ui";
+import { NavBar } from "@/components/ui/tubelight-navbar";
 
 export const metadata = { title: "Profile reviews" };
 
@@ -61,17 +62,12 @@ export default async function VerificationsPage({ searchParams }: { searchParams
             : "Check each agent's business and bank details against their documents and mark them checked. A master admin gives the final approval."
         }
       />
-      <div className="mb-5 flex gap-1 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--card)] p-1">
-        {TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={`/verifications?tab=${t.key}`}
-            className={cn("whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition", tab.key === t.key ? "bg-ink text-white dark:bg-brand-neon dark:text-ink" : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]")}
-          >
-            {t.label}
-          </Link>
-        ))}
-      </div>
+      <NavBar
+        className="mb-5"
+        layoutId="verification-tabs"
+        items={TABS.map((t) => ({ name: t.label, url: `/verifications?tab=${t.key}` }))}
+        active={tab.label}
+      />
 
       {error ? (
         <p className="rounded-xl bg-rose-50 p-4 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">

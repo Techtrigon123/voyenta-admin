@@ -4,7 +4,7 @@ import { createHash } from "crypto";
 import { cookies } from "next/headers";
 
 /**
- * Admin sessions: a signed cookie, separate from the Voyenta app's agent cookie and signed with a
+ * Admin sessions: a signed cookie, separate from the Vouchlio app's agent cookie and signed with a
  * different secret, so an agent token can never pass as an admin token.
  *
  * Stages: "2fa" — password OK, waiting for the 6-digit code · "setup" — password OK, must set up
@@ -12,7 +12,7 @@ import { cookies } from "next/headers";
  * so disabling an admin, changing permissions or resetting a password applies immediately.
  */
 
-export const COOKIE = "voyenta_admin";
+export const COOKIE = "vouchlio_admin";
 const FULL_TTL_SECONDS = 12 * 60 * 60; // 12 hours
 const PENDING_TTL_SECONDS = 10 * 60; // 10 minutes to finish 2-step verification
 
@@ -38,7 +38,7 @@ export function passwordVersion(passwordHash: string): string {
 
 export async function setSession(session: AdminSession): Promise<void> {
   const ttl = session.stage === "full" ? FULL_TTL_SECONDS : PENDING_TTL_SECONDS;
-  const token = jwt.sign(session, secret(), { algorithm: "HS256", expiresIn: ttl, audience: "voyenta-admin" });
+  const token = jwt.sign(session, secret(), { algorithm: "HS256", expiresIn: ttl, audience: "vouchlio-admin" });
   (await cookies()).set(COOKIE, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
@@ -48,14 +48,18 @@ export async function setSession(session: AdminSession): Promise<void> {
   });
 }
 
-export async function readSession(): Promise<AdminSession | null> {
-  const token = (await cookies()).get(COOKIE)?.value;
-  if (!token) return null;
+/** Checks a session token's signature and expiry only (no database). Used by proxy.ts for rate limiting. */
+export function verifySessionToken(token: string): AdminSession | null {
   try {
-    return jwt.verify(token, secret(), { algorithms: ["HS256"], audience: "voyenta-admin" }) as AdminSession;
+    return jwt.verify(token, secret(), { algorithms: ["HS256"], audience: "vouchlio-admin" }) as AdminSession;
   } catch {
     return null;
   }
+}
+
+export async function readSession(): Promise<AdminSession | null> {
+  const token = (await cookies()).get(COOKIE)?.value;
+  return token ? verifySessionToken(token) : null;
 }
 
 export async function clearSession(): Promise<void> {

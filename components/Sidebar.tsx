@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BadgeCheck,
@@ -16,7 +17,9 @@ import {
   Moon,
   ScrollText,
   Settings,
+  PhoneCall,
   ShieldCheck,
+  Ticket,
   Sun,
   UserCog,
   Users,
@@ -24,6 +27,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { NotificationBell, useAdminNotifications } from "@/components/NotificationBell";
 import { can, type Permission } from "@/lib/permissions";
 import { setTheme, useTheme } from "@/lib/theme";
 import { api } from "@/lib/client";
@@ -34,7 +38,7 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   permission?: Permission;
-  count?: "payments" | "support" | "reviews";
+  count?: "payments" | "support" | "reviews" | "tickets" | "callbacks";
 }
 
 const NAV: { heading: string; items: NavItem[] }[] = [
@@ -46,6 +50,8 @@ const NAV: { heading: string; items: NavItem[] }[] = [
       { href: "/verifications", label: "Profile reviews", icon: BadgeCheck, permission: "agents.verify", count: "reviews" },
       { href: "/agents", label: "Agents", icon: Users, permission: "agents.view" },
       { href: "/support", label: "Support chats", icon: MessageCircle, permission: "support.reply", count: "support" },
+      { href: "/tickets", label: "Support tickets", icon: Ticket, permission: "support.reply", count: "tickets" },
+      { href: "/callbacks", label: "Callbacks", icon: PhoneCall, permission: "support.reply", count: "callbacks" },
       { href: "/contact", label: "Contact messages", icon: Inbox, permission: "contact.manage" },
       { href: "/reports", label: "Reports", icon: BarChart3, permission: "reports.activity" },
     ],
@@ -60,11 +66,12 @@ const NAV: { heading: string; items: NavItem[] }[] = [
   },
 ];
 
-export default function Sidebar({ admin, counts }: { admin: AdminView; counts: { payments: number; support: number; reviews: number } }) {
+export default function Sidebar({ admin, counts }: { admin: AdminView; counts: { payments: number; support: number; reviews: number; tickets: number; callbacks: number } }) {
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
   const [open, setOpen] = useState(false);
+  const notifications = useAdminNotifications(admin.id);
   // Close the mobile menu after navigating (adjusting state during render, not in an effect).
   const [lastPath, setLastPath] = useState(pathname);
   if (lastPath !== pathname) {
@@ -79,7 +86,8 @@ export default function Sidebar({ admin, counts }: { admin: AdminView; counts: {
 
   const active = (href: string) => (href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`));
 
-  const nav = (
+  // Rendered in both the desktop sidebar and the mobile drawer; `lamp` keeps their sliding highlights apart.
+  const nav = (lamp: string) => (
     <nav className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 py-4" aria-label="Admin">
       {NAV.map((group) => {
         const items = group.items.filter((i) => !i.permission || can(admin, i.permission));
@@ -98,14 +106,28 @@ export default function Sidebar({ admin, counts }: { admin: AdminView; counts: {
                       href={item.href}
                       aria-current={isActive ? "page" : undefined}
                       className={cn(
-                        "group flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition",
-                        isActive ? "bg-white/10 text-white" : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                        "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                        isActive ? "text-white" : "text-neutral-400 hover:bg-white/5 hover:text-white"
                       )}
                     >
-                      <Icon className={cn("h-[18px] w-[18px]", isActive ? "text-brand-neon" : "text-neutral-500 group-hover:text-neutral-300")} />
-                      <span className="flex-1">{item.label}</span>
-                      {n > 0 ? <span className="rounded-full bg-brand-neon px-1.5 py-0.5 text-[10px] font-bold text-ink">{n > 99 ? "99+" : n}</span> : null}
-                      {isActive ? <span className="h-5 w-1 rounded-full bg-brand-neon" aria-hidden /> : null}
+                      {/* Tubelight: the highlight and its glowing edge lamp slide to the active item. */}
+                      {isActive ? (
+                        <motion.span
+                          layoutId={lamp}
+                          className="absolute inset-0 rounded-xl bg-white/10"
+                          initial={false}
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          aria-hidden
+                        >
+                          <span className="absolute right-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-l-full bg-brand-neon">
+                            <span className="absolute -right-2 -top-2 h-9 w-6 rounded-full bg-brand-neon/25 blur-md" />
+                            <span className="absolute -right-1 top-0 h-5 w-4 rounded-full bg-brand-neon/25 blur-sm" />
+                          </span>
+                        </motion.span>
+                      ) : null}
+                      <Icon className={cn("relative h-[18px] w-[18px]", isActive ? "text-brand-neon" : "text-neutral-500 group-hover:text-neutral-300")} />
+                      <span className="relative flex-1">{item.label}</span>
+                      {n > 0 ? <span className="relative mr-1 rounded-full bg-brand-neon px-1.5 py-0.5 text-[10px] font-bold text-ink">{n > 99 ? "99+" : n}</span> : null}
                     </Link>
                   </li>
                 );
@@ -149,10 +171,10 @@ export default function Sidebar({ admin, counts }: { admin: AdminView; counts: {
   const brand = (
     <Link href="/" className="flex items-center gap-3 px-5 py-5">
       <span className="rounded-lg bg-[#ffffff] px-1.5 py-1">
-        <Image src="/voyenta-logo-mark.png" alt="" width={234} height={160} className="h-6 w-auto" priority />
+        <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-6 w-auto" priority />
       </span>
       <span className="font-bold text-white">
-        Voyenta <span className="text-brand-neon">Admin</span>
+        Vouchlio <span className="text-brand-neon">Admin</span>
       </span>
     </Link>
   );
@@ -163,20 +185,26 @@ export default function Sidebar({ admin, counts }: { admin: AdminView; counts: {
       <header className="sticky top-0 z-40 flex items-center justify-between bg-[var(--sidebar)] px-4 py-3 lg:hidden">
         <span className="flex items-center gap-2 font-bold text-white">
           <span className="rounded-md bg-[#ffffff] px-1 py-0.5">
-            <Image src="/voyenta-logo-mark.png" alt="" width={234} height={160} className="h-5 w-auto" />
+            <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-5 w-auto" />
           </span>
-          Voyenta <span className="text-brand-neon">Admin</span>
+          Vouchlio <span className="text-brand-neon">Admin</span>
         </span>
-        <button type="button" onClick={() => setOpen(true)} aria-label="Open menu" className="rounded-lg p-2 text-white hover:bg-white/10">
-          <Menu className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-1">
+          <NotificationBell state={notifications} align="right" />
+          <button type="button" onClick={() => setOpen(true)} aria-label="Open menu" className="rounded-lg p-2 text-white hover:bg-white/10">
+            <Menu className="h-5 w-5" />
+          </button>
+        </div>
       </header>
 
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col bg-[var(--sidebar)] lg:flex">
         <div className="h-[3px] bg-gradient-to-r from-ink via-brand-500 to-brand-neon" />
-        {brand}
-        {nav}
+        <div className="flex items-center justify-between pr-3">
+          {brand}
+          <NotificationBell state={notifications} align="left" />
+        </div>
+        {nav("sidebar-lamp")}
         {footer}
       </aside>
 
@@ -191,7 +219,7 @@ export default function Sidebar({ admin, counts }: { admin: AdminView; counts: {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            {nav}
+            {nav("drawer-lamp")}
             {footer}
           </aside>
         </div>

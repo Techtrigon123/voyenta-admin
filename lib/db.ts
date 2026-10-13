@@ -2,7 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 /**
- * Server-only Supabase client using the service-role key (same project as the Voyenta app).
+ * Server-only Supabase client using the service-role key (same project as the Vouchlio app).
  * Never import this from a "use client" file — the key bypasses Row Level Security.
  */
 let client: SupabaseClient | null = null;
