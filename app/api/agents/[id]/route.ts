@@ -6,11 +6,14 @@ import { audit } from "@/lib/audit";
 import { fail, ok, readJson } from "@/lib/http";
 import type { Permission } from "@/lib/permissions";
 import { hit, retryMessage } from "@/lib/rate-limit";
+import { GRACE_DAYS, planName, subscriptionState } from "@/lib/plans";
 
 type Ctx = { params: Promise<{ id: string }> };
 
 const PERMISSION: Record<string, Permission> = {
   note: "agents.notes",
+  // Sends a renewal / upgrade reminder to the agent's bell — any admin who can add notes may send one.
+  plan_reminder: "agents.notes",
   reset_link: "agents.reset_link",
   unlock: "agents.unlock",
   suspend: "agents.suspend",
@@ -30,6 +33,7 @@ const ACTION_DAILY_LIMIT: Partial<Record<string, number>> = {
   unlock: 50,
   suspend: 30,
   plan: 50,
+  plan_reminder: 50,
   email: 20,
   delete: 10,
 };
@@ -61,6 +65,33 @@ export async function POST(req: Request, { params }: Ctx) {
     const users = () => db().from("users");
 
     switch (action) {
+      case "plan_reminder": {
+        const s = subscriptionState(agent);
+        const day = (iso: string) => new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
+        const name = planName(s.paidPlan);
+        let note: { title: string; body: string; href: string };
+        if ((s.status === "active" || s.status === "grace") && s.expiresAt && s.graceEndsAt && s.cycle) {
+          const href = `/dashboard/pricing?plan=${s.paidPlan}&cycle=${s.cycle}`;
+          note =
+            s.status === "active"
+              ? { title: `Reminder: renew your ${name} plan`, body: `Your ${name} plan ends on ${day(s.expiresAt)}. Renew before then to keep your features without a break — you also get ${GRACE_DAYS[s.cycle]} days of grace after it ends.`, href }
+              : { title: `Renew ${name} before ${day(s.graceEndsAt)}`, body: `Your ${name} plan has ended and you're in the grace period. Renew before ${day(s.graceEndsAt)}, or your account moves to the free Silver plan.`, href };
+        } else if (s.status === "active") {
+          return fail("This plan has no end date, so there's nothing to renew yet.");
+        } else if (s.status === "lapsed" && s.paidPlan) {
+          note = { title: `Your ${name} plan has ended`, body: `Renew ${name} to unlock your documents and services again — your saved work is waiting.`, href: `/dashboard/pricing?plan=${s.paidPlan}${s.cycle ? `&cycle=${s.cycle}` : ""}` };
+        } else {
+          note = { title: "Unlock more with Gold or Platinum", body: "Upgrade for unlimited documents with your logo and no watermark, plus proforma invoices, air tickets, itineraries and more.", href: "/dashboard/pricing" };
+        }
+        const { error } = await db().from("agent_notifications").insert({ agent_id: agent.id, kind: "plan", ...note });
+        if (error) {
+          if (/agent_notifications/.test(error.message)) return fail("Run migration 0013_agent_notifications.sql in Supabase first.", 500, "MIGRATION_MISSING");
+          throw new Error(error.message);
+        }
+        await audit(admin, "agent.plan_reminder", target, { status: s.status, plan: s.paidPlan ?? "silver" });
+        return ok(true, "Reminder sent — it appears in the agent's notification bell.");
+      }
+
       case "note": {
         const text = String(body.body ?? "").trim();
         if (!text) return fail("Write a note first.");
@@ -84,11 +115,13 @@ export async function POST(req: Request, { params }: Ctx) {
 
       case "unlock": {
         // Login / reset counters for this email, and per-account counters for this user.
-        const { data } = await db()
-          .from("rate_limits")
-          .delete()
-          .or(`key.like."%email:${agent.email.replace(/"/g, "")}%",key.like."%${agent.id}%"`)
-          .select("key");
+        // Matched exactly in code, not with a LIKE pattern built from the email: "_" and "%" are LIKE
+        // wildcards, so john_doe@… would also have cleared the counters of johnxdoe@….
+        const emailSuffix = `email:${agent.email.trim().toLowerCase()}`;
+        const userSuffix = `user:${agent.id}`;
+        const { data: candidates } = await db().from("rate_limits").select("key").or("key.like.*email:*,key.like.*user:*").limit(5000);
+        const keys = ((candidates ?? []) as { key: string }[]).map((r) => r.key).filter((k) => k.endsWith(emailSuffix) || k.endsWith(userSuffix));
+        const { data } = keys.length ? await db().from("rate_limits").delete().in("key", keys).select("key") : { data: [] };
         await audit(admin, "agent.unlock", target, { cleared: (data ?? []).length });
         return ok({ cleared: (data ?? []).length }, (data ?? []).length ? "Account unlocked." : "Nothing was locked.");
       }

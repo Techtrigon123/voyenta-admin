@@ -96,11 +96,11 @@ const sections: LegalSection[] = [
           <li>Act honestly and carefully, and check the facts before you approve, reject, suspend or change anything.</li>
           <li>Write clear, truthful notes so others understand why you made a decision.</li>
           <li>Follow the two-step review: a sub-admin checks, and a master admin makes the final decision.</li>
-          <li>Treat agents politely and professionally in support chats.</li>
+          <li>Treat agents politely and professionally in support tickets and callbacks.</li>
         </ul>
         <p><strong>You must not:</strong></p>
         <ul>
-          <li>Open agent profiles, documents, payments or chats that you do not need for your current task, out of curiosity or for anyone else.</li>
+          <li>Open agent profiles, documents, payments or support tickets that you do not need for your current task, out of curiosity or for anyone else.</li>
           <li>Copy, screenshot, download, print, forward or photograph agent or customer data, except where your task requires it and through the portal&apos;s own tools.</li>
           <li>Contact agents or their customers outside official Vouchlio channels, or use their details for any other purpose.</li>
           <li>Ask an agent for their password or a one-time code. Use the portal&apos;s reset link instead.</li>

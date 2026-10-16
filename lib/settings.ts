@@ -25,7 +25,6 @@ export interface AiSettings {
 
 /** Support channels shown to agents (read by checkin-app/lib/settings.ts). */
 export interface SupportSettings {
-  liveChat: boolean;
   tickets: boolean;
   bugReports: boolean;
   callbacks: boolean;
@@ -44,7 +43,7 @@ export const DEFAULT_SETTINGS: Settings = {
   payments: { upiId: "", payeeName: "", onlineEnabled: true, manualUpi: true },
   pricing: DEFAULT_PRICES,
   ai: { enabled: true, dailyBudgetUsd: 10, monthlyBudgetUsd: 150, userDailyCalls: 30, freePoolDailyCalls: 100 },
-  support: { liveChat: true, tickets: true, bugReports: true, callbacks: true, callbackHours: "Mon–Sat, 10 am – 7 pm IST" },
+  support: { tickets: true, bugReports: true, callbacks: true, callbackHours: "Mon–Sat, 10 am – 7 pm IST" },
 };
 
 export type SettingsKey = keyof Settings;

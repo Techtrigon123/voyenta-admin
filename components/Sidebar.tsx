@@ -13,7 +13,6 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
-  MessageCircle,
   Moon,
   ScrollText,
   Settings,
@@ -38,7 +37,7 @@ interface NavItem {
   label: string;
   icon: LucideIcon;
   permission?: Permission;
-  count?: "payments" | "support" | "reviews" | "tickets" | "callbacks";
+  count?: "payments" | "reviews" | "tickets" | "callbacks";
 }
 
 const NAV: { heading: string; items: NavItem[] }[] = [
@@ -49,7 +48,6 @@ const NAV: { heading: string; items: NavItem[] }[] = [
       { href: "/payments", label: "Plan payments", icon: CreditCard, permission: "payments.view", count: "payments" },
       { href: "/verifications", label: "Profile reviews", icon: BadgeCheck, permission: "agents.verify", count: "reviews" },
       { href: "/agents", label: "Agents", icon: Users, permission: "agents.view" },
-      { href: "/support", label: "Support chats", icon: MessageCircle, permission: "support.reply", count: "support" },
       { href: "/tickets", label: "Support tickets", icon: Ticket, permission: "support.reply", count: "tickets" },
       { href: "/callbacks", label: "Callbacks", icon: PhoneCall, permission: "support.reply", count: "callbacks" },
       { href: "/contact", label: "Contact messages", icon: Inbox, permission: "contact.manage" },
@@ -66,7 +64,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
   },
 ];
 
-export default function Sidebar({ admin, counts }: { admin: AdminView; counts: { payments: number; support: number; reviews: number; tickets: number; callbacks: number } }) {
+export default function Sidebar({ admin, counts }: { admin: AdminView; counts: { payments: number; reviews: number; tickets: number; callbacks: number } }) {
   const pathname = usePathname();
   const router = useRouter();
   const theme = useTheme();
@@ -171,7 +169,7 @@ export default function Sidebar({ admin, counts }: { admin: AdminView; counts: {
   const brand = (
     <Link href="/" className="flex items-center gap-3 px-5 py-5">
       <span className="rounded-lg bg-[#ffffff] px-1.5 py-1">
-        <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-6 w-auto" priority />
+        <Image src="/brand/vouchlio-mark.png" alt="Vouchlio" width={1024} height={1024} className="h-6 w-auto" priority />
       </span>
       <span className="font-bold text-white">
         Vouchlio <span className="text-brand-neon">Admin</span>
@@ -185,7 +183,7 @@ export default function Sidebar({ admin, counts }: { admin: AdminView; counts: {
       <header className="sticky top-0 z-40 flex items-center justify-between bg-[var(--sidebar)] px-4 py-3 lg:hidden">
         <span className="flex items-center gap-2 font-bold text-white">
           <span className="rounded-md bg-[#ffffff] px-1 py-0.5">
-            <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-5 w-auto" />
+            <Image src="/brand/vouchlio-mark.png" alt="Vouchlio" width={1024} height={1024} className="h-5 w-auto" />
           </span>
           Vouchlio <span className="text-brand-neon">Admin</span>
         </span>

@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, BellOff, Bug, IndianRupee, MessageCircle, PhoneCall, Ticket, Volume2, VolumeX } from "lucide-react";
+import { Bell, BellOff, Bug, IndianRupee, PhoneCall, Ticket, Volume2, VolumeX } from "lucide-react";
 import { api } from "@/lib/client";
 import { cn, timeAgo } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ import { cn, timeAgo } from "@/lib/utils";
  * the desktop sidebar and the mobile header share one poll and one chime.
  */
 
-type Kind = "chat" | "ticket" | "bug" | "callback" | "payment";
+type Kind = "ticket" | "bug" | "callback" | "payment";
 export interface AdminNotification {
   id: string;
   kind: Kind;
@@ -199,7 +199,6 @@ export type NotificationState = ReturnType<typeof useAdminNotifications>;
 /* ─── Bell + panel ─────────────────────────────────────────────────────────── */
 
 const KIND: Record<Kind, { icon: typeof Bell; tone: string; label: string }> = {
-  chat: { icon: MessageCircle, tone: "bg-emerald-500/15 text-emerald-300", label: "Chat" },
   ticket: { icon: Ticket, tone: "bg-sky-500/15 text-sky-300", label: "Ticket" },
   bug: { icon: Bug, tone: "bg-rose-500/15 text-rose-300", label: "Bug" },
   callback: { icon: PhoneCall, tone: "bg-violet-500/15 text-violet-300", label: "Callback" },
@@ -281,7 +280,7 @@ export function NotificationBell({ state, align = "left" }: { state: Notificatio
               <div className="flex flex-col items-center gap-2 px-4 py-10 text-center">
                 <BellOff className="h-6 w-6 text-neutral-500" />
                 <p className="text-sm font-medium">You&apos;re all caught up</p>
-                <p className="text-xs text-neutral-400">New chats, tickets, callback requests and online payments appear here.</p>
+                <p className="text-xs text-neutral-400">New tickets, callback requests and online payments appear here.</p>
               </div>
             ) : (
               <ul className="divide-y divide-white/5">
@@ -311,9 +310,8 @@ export function NotificationBell({ state, align = "left" }: { state: Notificatio
               </ul>
             )}
           </div>
-          <div className="grid grid-cols-3 border-t border-white/10 text-center text-xs">
-            <Link href="/support" onClick={() => setOpen(false)} className="py-2.5 text-neutral-300 hover:bg-white/5 hover:text-white">Chats</Link>
-            <Link href="/tickets" onClick={() => setOpen(false)} className="border-x border-white/10 py-2.5 text-neutral-300 hover:bg-white/5 hover:text-white">Tickets</Link>
+          <div className="grid grid-cols-2 border-t border-white/10 text-center text-xs">
+            <Link href="/tickets" onClick={() => setOpen(false)} className="border-r border-white/10 py-2.5 text-neutral-300 hover:bg-white/5 hover:text-white">Tickets</Link>
             <Link href="/callbacks" onClick={() => setOpen(false)} className="py-2.5 text-neutral-300 hover:bg-white/5 hover:text-white">Callbacks</Link>
           </div>
         </div>

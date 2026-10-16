@@ -21,7 +21,7 @@ export default function LegalPage({ title, intro, sections }: { title: string; i
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <Link href="/" className="flex items-center gap-3">
             <span className="rounded-lg bg-[#ffffff] px-1.5 py-1">
-              <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-6 w-auto" />
+              <Image src="/brand/vouchlio-mark.png" alt="Vouchlio" width={1024} height={1024} className="h-6 w-auto" />
             </span>
             <span className="font-bold text-white">
               Vouchlio <span className="text-brand-neon">Admin</span>

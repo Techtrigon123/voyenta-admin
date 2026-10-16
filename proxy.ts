@@ -96,5 +96,7 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|vouchlio-logo-mark.png).*)"],
+  // Static files that must load without a session: build assets, the image optimiser, and the public
+  // logo in /brand (the login page shows it, and the optimiser fetches it without cookies).
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|brand/).*)"],
 };

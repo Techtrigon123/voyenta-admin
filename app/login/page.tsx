@@ -75,7 +75,7 @@ export default function LoginPage() {
         <div className="pointer-events-none absolute -bottom-32 right-0 h-96 w-96 rounded-full bg-brand-neon/10 blur-3xl" aria-hidden />
         <div className="relative flex items-center gap-3">
           <span className="rounded-xl bg-[#ffffff] px-2 py-1.5">
-            <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-7 w-auto" priority />
+            <Image src="/brand/vouchlio-mark.png" alt="Vouchlio" width={1024} height={1024} className="h-7 w-auto" priority />
           </span>
           <span className="text-lg font-bold">
             Vouchlio <span className="text-brand-neon">Admin</span>
@@ -105,7 +105,7 @@ export default function LoginPage() {
         <div className="anim-rise w-full max-w-sm">
           <div className="mb-8 flex items-center gap-3 lg:hidden">
             <span className="rounded-xl bg-[#ffffff] px-2 py-1.5 ring-1 ring-[var(--border)]">
-              <Image src="/vouchlio-logo-mark.png" alt="" width={234} height={160} className="h-6 w-auto" />
+              <Image src="/brand/vouchlio-mark.png" alt="Vouchlio" width={1024} height={1024} className="h-6 w-auto" />
             </span>
             <span className="font-bold">
               Vouchlio <span className="text-brand-600 dark:text-brand-neon">Admin</span>

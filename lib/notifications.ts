@@ -2,18 +2,16 @@ import "server-only";
 import { db } from "@/lib/db";
 import { agentNames } from "@/lib/agents";
 import { can } from "@/lib/permissions";
-import { unansweredSupport } from "@/lib/queries";
 import { formatInr } from "@/lib/utils";
 import type { AdminRecord } from "@/lib/auth/guard";
 
 /**
- * What needs an admin's attention right now, for the notification bell: support chats waiting
- * for a reply, tickets (and bug reports) whose last message is from the agent, new callback
+ * What needs an admin's attention right now, for the notification bell: tickets (and bug reports) whose last message is from the agent, new callback
  * requests, online plan payments from the last two days and Razorpay refunds that failed.
  * Derived live from the tables, so it always matches the sidebar counts and clears itself once
  * someone handles the item (payments simply age out).
  */
-export type NotificationKind = "chat" | "ticket" | "bug" | "callback" | "payment";
+export type NotificationKind = "ticket" | "bug" | "callback" | "payment";
 
 export interface AdminNotification {
   /** Changes whenever the item gets new activity, so a new message re-notifies. */
@@ -45,13 +43,12 @@ interface OnlinePaymentRow {
   refunded_at: string | null;
 }
 
-export async function buildNotifications(admin: AdminRecord): Promise<{ items: AdminNotification[]; counts: Record<"chats" | "tickets" | "callbacks", number> }> {
+export async function buildNotifications(admin: AdminRecord): Promise<{ items: AdminNotification[]; counts: Record<"tickets" | "callbacks", number> }> {
   const support = can(admin, "support.reply");
   const payments = can(admin, "payments.view");
   const none = Promise.resolve([]);
 
-  const [chats, tickets, callbacks, online] = await Promise.all([
-    support ? unansweredSupport().catch(() => []) : none,
+  const [tickets, callbacks, online] = await Promise.all([
     support
       ? db()
           .from("support_tickets")
@@ -84,7 +81,7 @@ export async function buildNotifications(admin: AdminRecord): Promise<{ items: A
       : none,
   ]);
 
-  const names = await agentNames([...chats.map((c) => c.agentId), ...tickets.map((t) => t.agent_id), ...callbacks.map((c) => c.agent_id), ...online.map((p) => p.agent_id)]);
+  const names = await agentNames([...tickets.map((t) => t.agent_id), ...callbacks.map((c) => c.agent_id), ...online.map((p) => p.agent_id)]);
   const who = (id: string) => {
     const n = names.get(id);
     return n?.company || n?.name || "An agent";
@@ -93,14 +90,6 @@ export async function buildNotifications(admin: AdminRecord): Promise<{ items: A
   const plan = (p: string) => (p === "gold" ? "Gold" : p === "platinum" ? "Platinum" : p);
 
   const items: AdminNotification[] = [
-    ...chats.map((c) => ({
-      id: `chat:${c.agentId}:${c.at}`,
-      kind: "chat" as const,
-      title: `${who(c.agentId)} sent a chat message`,
-      body: clip(c.body),
-      at: c.at,
-      href: `/support/${c.agentId}`,
-    })),
     ...tickets.map((t) => {
       const isNew = t.last_reply_at === t.created_at || Date.parse(t.last_reply_at) - Date.parse(t.created_at) < 5000;
       return {
@@ -145,5 +134,5 @@ export async function buildNotifications(admin: AdminRecord): Promise<{ items: A
     .sort((a, b) => b.at.localeCompare(a.at))
     .slice(0, LIMIT);
 
-  return { items, counts: { chats: chats.length, tickets: tickets.length, callbacks: callbacks.length } };
+  return { items, counts: { tickets: tickets.length, callbacks: callbacks.length } };
 }

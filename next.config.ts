@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/:path*", headers: securityHeaders },
       { source: "/:path*", headers: [{ key: "Cache-Control", value: "no-store" }] },
+      // The public logo is the one thing safe to cache (this later rule overrides no-store above).
+      { source: "/brand/vouchlio-mark.png", headers: [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }] },
     ];
   },
 };

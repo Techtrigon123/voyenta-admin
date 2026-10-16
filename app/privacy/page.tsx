@@ -20,7 +20,7 @@ const sections: LegalSection[] = [
       <>
         <p>
           {LEGAL.product} is the internal portal that {LEGAL.entityName} (&quot;we&quot;, &quot;us&quot;), {LEGAL.address}, uses to run
-          Vouchlio. Master admins and sub-admins use it to review plan payments, check agent profiles, answer support chats and
+          Vouchlio. Master admins and sub-admins use it to review plan payments, check agent profiles, answer support tickets and
           keep accounts healthy.
         </p>
         <p>This policy explains what personal data we collect about <strong>you as an admin</strong>, why, who can see it, how long we keep it and what your rights are.</p>

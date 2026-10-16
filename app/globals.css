@@ -168,6 +168,13 @@ html[data-theme="dark"] .legal-body a {
   color: var(--color-brand-neon);
 }
 
+/* Native <select> lists: Windows Chrome/Edge can paint the open list white under light option text,
+   so every option looked blank. Give the list its own dark colours. */
+html[data-theme="dark"] :is(option, optgroup) {
+  background-color: var(--card);
+  color: var(--foreground);
+}
+
 /* Skeleton shimmer */
 .skeleton {
   background: linear-gradient(90deg, var(--muted) 25%, var(--border) 50%, var(--muted) 75%);

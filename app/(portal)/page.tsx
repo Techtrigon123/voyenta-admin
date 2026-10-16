@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { requirePage } from "@/lib/auth/guard";
 import { can } from "@/lib/permissions";
 import { agentNames, withCycle } from "@/lib/agents";
-import { openReviewCount, unansweredSupport } from "@/lib/queries";
+import { openReviewCount } from "@/lib/queries";
 import { planName, subscriptionState } from "@/lib/plans";
 import { formatInr, nowMs, timeAgo } from "@/lib/utils";
 import { Badge, Card, CardTitle, PageHeader, StatCard } from "@/components/ui";
@@ -21,13 +21,12 @@ export default async function OverviewPage() {
   const since30 = new Date(now - 30 * DAY).toISOString();
   const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString();
 
-  const [users, docs30, pending, waiting, contactNew, approvedMonth, reviews] = await Promise.all([
+  const [users, docs30, pending, contactNew, approvedMonth, reviews] = await Promise.all([
     db().from("users").select(await withCycle("id,status,created_at,subscription_plan,subscription_expires_at")),
     db().from("agent_documents").select("id", { count: "exact", head: true }).gte("created_at", since30),
     can(admin, "payments.view")
       ? db().from("plan_payments").select("id,agent_id,plan_id,amount_inr,created_at,reviewed_at").eq("status", "pending").order("created_at").limit(6)
       : Promise.resolve({ data: [] }),
-    can(admin, "support.reply") ? unansweredSupport().catch(() => []) : Promise.resolve([]),
     can(admin, "contact.manage")
       ? db().from("contact_messages").select("id", { count: "exact", head: true }).eq("status", "new")
       : Promise.resolve({ count: 0 }),
@@ -44,7 +43,7 @@ export default async function OverviewPage() {
   const expiringSoon = subs.filter((s) => s.status === "active" && s.daysLeft !== null && s.daysLeft <= 7).length;
   const revenue = ((approvedMonth.data ?? []) as { amount_inr: number }[]).reduce((s, p) => s + p.amount_inr, 0);
   const pendingRows = (pending.data ?? []) as { id: string; agent_id: string; plan_id: string; amount_inr: number; created_at: string; reviewed_at: string | null }[];
-  const names = await agentNames([...pendingRows.map((p) => p.agent_id), ...waiting.slice(0, 6).map((w) => w.agentId)]);
+  const names = await agentNames(pendingRows.map((p) => p.agent_id));
 
   return (
     <>
@@ -57,7 +56,7 @@ export default async function OverviewPage() {
         {showRevenue ? (
           <StatCard label="Revenue this month" value={formatInr(revenue)} hint={`${paid} paid plans active`} icon={IndianRupee} tone="green" />
         ) : (
-          <StatCard label="Waiting for you" value={pendingRows.length + waiting.length + reviews} hint={`${reviews} profile${reviews === 1 ? "" : "s"} to check · payments · support`} icon={AlertTriangle} tone="amber" />
+          <StatCard label="Waiting for you" value={pendingRows.length + reviews} hint={`${reviews} profile${reviews === 1 ? "" : "s"} to check · payments`} icon={AlertTriangle} tone="amber" />
         )}
       </div>
 
@@ -94,30 +93,6 @@ export default async function OverviewPage() {
           </Card>
         ) : null}
 
-        {can(admin, "support.reply") ? (
-          <Card>
-            <CardTitle hint={<Link href="/support" className="inline-flex items-center gap-1 font-semibold text-brand-600 hover:underline dark:text-brand-300">Open inbox <ArrowRight className="h-3 w-3" /></Link>}>
-              <span className="inline-flex items-center gap-2"><MessageCircle className="h-4 w-4 text-brand-500" /> Support chats waiting for a reply</span>
-            </CardTitle>
-            {waiting.length === 0 ? (
-              <p className="text-sm text-[var(--muted-foreground)]">Every agent has an answer.</p>
-            ) : (
-              <ul className="divide-y divide-[var(--border)]">
-                {waiting.slice(0, 6).map((w) => (
-                  <li key={w.agentId} className="py-2.5 text-sm">
-                    <Link href={`/support/${w.agentId}`} className="block hover:text-brand-600 dark:hover:text-brand-300">
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="truncate font-medium">{names.get(w.agentId)?.company || names.get(w.agentId)?.name || "Agent"}</span>
-                        <span className="shrink-0 text-xs text-[var(--muted-foreground)]">{timeAgo(w.at)}</span>
-                      </span>
-                      <span className="line-clamp-1 text-xs text-[var(--muted-foreground)]">{w.body}</span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        ) : null}
       </div>
     </>
   );

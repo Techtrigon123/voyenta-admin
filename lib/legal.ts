@@ -15,5 +15,5 @@ export const LEGAL = {
   /** TODO: a monitored email address for privacy questions and security reports. */
   contactEmail: "",
   /** Date shown as "Last updated" on both pages. */
-  lastUpdated: "5 October 2026",
+  lastUpdated: "16 October 2026",
 } as const;

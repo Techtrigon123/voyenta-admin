@@ -148,7 +148,6 @@ export default function SettingsForms({ initial, razorpayReady }: { initial: Set
           <div className="grid gap-3 sm:grid-cols-2">
             {(
               [
-                ["liveChat", "Live chat", "Real-time chat in Support chats"],
                 ["tickets", "Support tickets", "Written requests with a reply thread"],
                 ["bugReports", "Bug reports", "Screenshot + marked issue, opened as a ticket"],
                 ["callbacks", "Callback requests", "Agents book a call at a preferred time"],

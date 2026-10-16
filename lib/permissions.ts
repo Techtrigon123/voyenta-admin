@@ -27,7 +27,7 @@ export const PERMISSIONS = {
   "agents.delete": "Delete agent accounts",
   "agents.export": "Export an agent's data",
   // Support
-  "support.reply": "Read and reply to agent support chats",
+  "support.reply": "Handle support tickets, bug reports and callbacks",
   "contact.manage": "Read and handle contact-form messages",
   // Reports
   "reports.activity": "See activity and usage reports",

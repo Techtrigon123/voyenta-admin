@@ -12,7 +12,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 export const metadata: Metadata = {
   title: { default: "Vouchlio Admin", template: "%s · Vouchlio Admin" },
   robots: { index: false, follow: false },
-  icons: { icon: "/vouchlio-logo-mark.png" },
+  icons: { icon: "/brand/vouchlio-mark.png" },
 };
 
 export const viewport: Viewport = { themeColor: "#0a0a0a" };

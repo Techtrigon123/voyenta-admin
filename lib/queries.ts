@@ -14,19 +14,3 @@ export async function openReviewCount(includeChecked: boolean): Promise<number> 
   return error ? 0 : count ?? 0; // 0 until migration 0007 is run
 }
 
-/** Agents whose latest support message is from them — i.e. waiting for a reply. */
-export async function unansweredSupport(): Promise<{ agentId: string; at: string; body: string }[]> {
-  const { data } = await db()
-    .from("support_messages")
-    .select("agent_id,from,body,created_at")
-    .order("created_at", { ascending: false })
-    .limit(1000);
-  const seen = new Set<string>();
-  const waiting: { agentId: string; at: string; body: string }[] = [];
-  for (const m of (data ?? []) as { agent_id: string; from: string; body: string; created_at: string }[]) {
-    if (seen.has(m.agent_id)) continue;
-    seen.add(m.agent_id);
-    if (m.from === "agent") waiting.push({ agentId: m.agent_id, at: m.created_at, body: m.body });
-  }
-  return waiting;
-}

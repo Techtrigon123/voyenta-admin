@@ -68,7 +68,6 @@ export async function POST(req: Request) {
 
     if (key === "support") {
       const value: SupportSettings = {
-        liveChat: v.liveChat !== false,
         tickets: v.tickets !== false,
         bugReports: v.bugReports !== false,
         callbacks: v.callbacks !== false,

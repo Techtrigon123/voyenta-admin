@@ -1,6 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BadgeCheck, FileText, Lock, MessageCircle } from "lucide-react";
+import { BadgeCheck, FileText, Lock } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { db } from "@/lib/db";
 import { isUuid, requirePage } from "@/lib/auth/guard";
@@ -23,7 +22,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const agent = await getAgent(id);
   if (!agent) notFound();
 
-  const [counts, lastDoc, customers, payments, notes, lastSupport] = await Promise.all([
+  const [counts, lastDoc, customers, payments, notes] = await Promise.all([
     db().rpc("agent_document_counts", { p_agent: id }),
     db().from("agent_documents").select("created_at").eq("agent_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     db().from("customers").select("id", { count: "exact", head: true }).eq("agent_id", id),
@@ -31,7 +30,6 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       ? db().from("plan_payments").select("id,plan_id,amount_inr,status,created_at").eq("agent_id", id).neq("status", "created").order("created_at", { ascending: false }).limit(10)
       : Promise.resolve({ data: [] }),
     db().from("agent_notes").select("id,admin_name,body,created_at").eq("agent_id", id).order("created_at", { ascending: false }).limit(50),
-    db().from("support_messages").select("from,created_at").eq("agent_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   const docCounts = new Map(((counts.data ?? []) as { kind: string; count: number }[]).map((c) => [c.kind, Number(c.count)]));
@@ -70,11 +68,6 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
         </div>
-        {can(admin, "support.reply") ? (
-          <Link href={`/support/${agent.id}`} className="inline-flex h-10 items-center gap-2 rounded-lg border border-[var(--border)] px-4 text-sm font-semibold hover:border-brand-300">
-            <MessageCircle className="h-4 w-4" /> Support chat {lastSupport.data ? <span className="text-xs font-normal text-[var(--muted-foreground)]">· {timeAgo(lastSupport.data.created_at)}</span> : null}
-          </Link>
-        ) : null}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
@@ -166,6 +159,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             }}
             perms={{
               review: can(admin, "agents.verify"),
+              remind: can(admin, "agents.notes"),
               resetLink: can(admin, "agents.reset_link"),
               unlock: can(admin, "agents.unlock"),
               suspend: can(admin, "agents.suspend"),

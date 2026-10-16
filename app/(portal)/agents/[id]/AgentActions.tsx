@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BadgeCheck, Copy, Download, KeyRound, LockOpen, Mail, ShieldBan, ShieldCheck, Trash2, Wand2 } from "lucide-react";
+import { BadgeCheck, BellRing, Copy, Download, KeyRound, LockOpen, Mail, ShieldBan, ShieldCheck, Trash2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/lib/client";
 import { timeAgo } from "@/lib/utils";
@@ -25,6 +25,8 @@ interface AgentInfo {
 
 interface Perms {
   review: boolean;
+  /** Send a renewal / upgrade reminder to the agent's notification bell. */
+  remind: boolean;
   resetLink: boolean;
   unlock: boolean;
   suspend: boolean;
@@ -81,7 +83,7 @@ export default function AgentActions({ agent, perms }: { agent: AgentInfo; perms
   };
 
   const suspended = agent.status === "SUSPENDED";
-  const showAccountHelp = perms.resetLink || perms.unlock;
+  const showAccountHelp = perms.resetLink || perms.unlock || perms.remind;
   const showDanger = perms.suspend || perms.email || perms.del || perms.exportData;
 
   return (
@@ -125,6 +127,11 @@ export default function AgentActions({ agent, perms }: { agent: AgentInfo; perms
             {perms.unlock ? (
               <button type="button" disabled={busy} onClick={() => run({ action: "unlock" })} className={secondaryBtn}>
                 <LockOpen className="h-4 w-4" /> Unlock sign-in (clear lockouts)
+              </button>
+            ) : null}
+            {perms.remind ? (
+              <button type="button" disabled={busy || suspended} onClick={() => run({ action: "plan_reminder" })} className={secondaryBtn} title="Renew-before-it-ends reminder for paid plans; an upgrade nudge for free accounts">
+                <BellRing className="h-4 w-4" /> Send plan reminder
               </button>
             ) : null}
           </div>

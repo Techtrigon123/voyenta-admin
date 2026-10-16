@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { requirePage } from "@/lib/auth/guard";
 import { can } from "@/lib/permissions";
 import { withCycle } from "@/lib/agents";
+import { cached } from "@/lib/cache";
 import { SERVICE_LABELS, planName, subscriptionState } from "@/lib/plans";
 import { formatDate, formatInr, nowMs } from "@/lib/utils";
 import { Badge, Card, CardTitle, PageHeader } from "@/components/ui";
@@ -10,6 +11,7 @@ import { Badge, Card, CardTitle, PageHeader } from "@/components/ui";
 export const metadata = { title: "Reports" };
 
 const DAY = 86_400_000;
+const REPORT_TTL_MS = 5 * 60_000;
 
 function Bars({ rows, format = (n: number) => n.toLocaleString("en-IN") }: { rows: { label: string; value: number }[]; format?: (n: number) => string }) {
   const max = Math.max(1, ...rows.map((r) => r.value));
@@ -37,12 +39,20 @@ export default async function ReportsPage() {
   const since14 = new Date(now - 14 * DAY).toISOString().slice(0, 10);
   const since6m = new Date(new Date().getFullYear(), new Date().getMonth() - 5, 1).toISOString();
 
-  const [users, docs, ai, payments] = await Promise.all([
-    db().from("users").select(await withCycle("id,created_at,subscription_plan,subscription_expires_at,name,company_name")),
-    db().from("agent_documents").select("kind").gte("created_at", since30).limit(50000),
-    db().from("ai_usage_daily").select("day,calls,cost_micros").gte("day", since14).order("day"),
-    revenue ? db().from("plan_payments").select("amount_inr,status,plan_id,updated_at").in("status", ["approved", "refunded"]).gte("updated_at", since6m) : Promise.resolve({ data: [] }),
-  ]);
+  // These queries read every agent and a month of documents, so the results are shared for a few
+  // minutes. The permission checks above still run on every request.
+  const [users, docs, ai, payments] = await cached(
+    `reports:${revenue ? "revenue" : "activity"}`,
+    REPORT_TTL_MS,
+    async () =>
+      Promise.all([
+        db().from("users").select(await withCycle("id,created_at,subscription_plan,subscription_expires_at,name,company_name")),
+        db().from("agent_documents").select("kind").gte("created_at", since30).limit(50000),
+        db().from("ai_usage_daily").select("day,calls,cost_micros").gte("day", since14).order("day"),
+        revenue ? db().from("plan_payments").select("amount_inr,status,plan_id,updated_at").in("status", ["approved", "refunded"]).gte("updated_at", since6m) : Promise.resolve({ data: [] }),
+      ]),
+    (results) => results.every((r) => !(r as { error?: unknown }).error)
+  );
 
   const agents = (users.data ?? []) as unknown as { id: string; created_at: string; subscription_plan: string; subscription_expires_at: string | null; subscription_cycle?: string | null; name: string; company_name: string | null }[];
 
@@ -80,7 +90,7 @@ export default async function ReportsPage() {
 
   return (
     <>
-      <PageHeader title="Reports" description={revenue ? "Activity, plans and revenue." : "Activity and usage across Vouchlio."} />
+      <PageHeader title="Reports" description={`${revenue ? "Activity, plans and revenue." : "Activity and usage across Vouchlio."} Figures update every 5 minutes.`} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

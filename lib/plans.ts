@@ -26,6 +26,7 @@ export const SERVICE_LABELS: Record<string, string> = {
   invoice: "Tax invoices",
   proforma: "Proforma invoices",
   receipt: "Payment receipts",
+  itinerary: "Itineraries",
 };
 
 export function planName(p: string | null | undefined): string {
