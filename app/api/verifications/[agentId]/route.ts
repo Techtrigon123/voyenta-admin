@@ -9,9 +9,10 @@ type Ctx = { params: Promise<{ agentId: string }> };
 /**
  * Agent profile review.
  * Body: { action: "check" | "approve" | "deny", token, note?, confirmUnchecked? }
- * check   — sub-admins and masters (agents.verify): the details look right.
- * approve — masters (agents.approve): the agent becomes Verified and can download PDFs.
- * deny    — masters (agents.approve): the agent sees the reason, fixes their profile and resubmits.
+ * check   — agents.verify: the details look right; another admin can give the decision.
+ * approve — agents.approve (masters, and sub-admins by default): the agent becomes Verified and can download PDFs.
+ * deny    — agents.approve: the agent sees the reason, fixes their profile and resubmits.
+ * Each step notifies the agent through the users trigger (migrations 0013 and 0016).
  * `token` identifies the exact details on screen; if the agent edited anything since, nothing happens.
  */
 export async function POST(req: Request, { params }: Ctx) {
@@ -55,7 +56,7 @@ export async function POST(req: Request, { params }: Ctx) {
         .eq("id", agentId);
       if (note) await db().from("agent_notes").insert({ agent_id: agentId, admin_id: admin.id, admin_name: admin.name, body: `Profile check: ${note}` });
       await audit(admin, "agent.profile_check", target, { status, note: note || undefined });
-      return ok(true, "Marked as checked. A master admin will give the final approval.");
+      return ok(true, "Marked as checked. An admin who can verify profiles will give the final decision.");
     }
 
     if (!["pending", "checked", "changes_pending", "changes_checked"].includes(status)) return fail("This profile isn't waiting for a decision.", 409);

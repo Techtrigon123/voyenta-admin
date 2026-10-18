@@ -75,7 +75,7 @@ export default function ReviewActions({ agentId, token, status, canCheck, canDec
               </button>
             </>
           ) : !toCheck ? (
-            <p className="text-sm text-[var(--muted-foreground)]">Checked — waiting for a master admin to approve.</p>
+            <p className="text-sm text-[var(--muted-foreground)]">Checked — waiting for an admin who can verify profiles to give the final decision.</p>
           ) : null}
         </div>
       </Card>

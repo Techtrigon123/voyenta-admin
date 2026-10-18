@@ -74,7 +74,7 @@ export async function POST(req: Request, { params }: Ctx) {
           const href = `/dashboard/pricing?plan=${s.paidPlan}&cycle=${s.cycle}`;
           note =
             s.status === "active"
-              ? { title: `Reminder: renew your ${name} plan`, body: `Your ${name} plan ends on ${day(s.expiresAt)}. Renew before then to keep your features without a break — you also get ${GRACE_DAYS[s.cycle]} days of grace after it ends.`, href }
+              ? { title: `Reminder: renew your ${name} plan`, body: `Your ${name} plan ends on ${day(s.expiresAt)}. Renew before then to keep your features without a break — you also get ${GRACE_DAYS[s.paidPlan ?? "gold"][s.cycle]} days of grace after it ends.`, href }
               : { title: `Renew ${name} before ${day(s.graceEndsAt)}`, body: `Your ${name} plan has ended and you're in the grace period. Renew before ${day(s.graceEndsAt)}, or your account moves to the free Silver plan.`, href };
         } else if (s.status === "active") {
           return fail("This plan has no end date, so there's nothing to renew yet.");
@@ -108,7 +108,7 @@ export async function POST(req: Request, { params }: Ctx) {
         await users()
           .update({ reset_token: createHash("sha256").update(token).digest("hex"), reset_token_expiry: new Date(Date.now() + RESET_TTL_MS).toISOString() })
           .eq("id", agent.id);
-        const base = (process.env.AGENT_APP_URL || "http://localhost:3000").replace(/\/+$/, "");
+        const base = (process.env.AGENT_APP_URL || "https://vouchlio.com").replace(/\/+$/, "");
         await audit(admin, "agent.reset_link", target);
         return ok({ link: `${base}/reset-password/${token}`, expiresInMinutes: RESET_TTL_MS / 60_000 }, "Reset link created.");
       }

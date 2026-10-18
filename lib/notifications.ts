@@ -6,12 +6,13 @@ import { formatInr } from "@/lib/utils";
 import type { AdminRecord } from "@/lib/auth/guard";
 
 /**
- * What needs an admin's attention right now, for the notification bell: tickets (and bug reports) whose last message is from the agent, new callback
- * requests, online plan payments from the last two days and Razorpay refunds that failed.
+ * What needs an admin's attention right now, for the notification bell: agent profiles waiting for
+ * review, tickets (and bug reports) whose last message is from the agent, new callback requests,
+ * online plan payments from the last two days and Razorpay refunds that failed.
  * Derived live from the tables, so it always matches the sidebar counts and clears itself once
  * someone handles the item (payments simply age out).
  */
-export type NotificationKind = "ticket" | "bug" | "callback" | "payment";
+export type NotificationKind = "ticket" | "bug" | "callback" | "payment" | "verification";
 
 export interface AdminNotification {
   /** Changes whenever the item gets new activity, so a new message re-notifies. */
@@ -30,6 +31,19 @@ const SLOT: Record<string, string> = { morning: "morning", afternoon: "afternoon
 type Row<T> = { data: T[] | null; error: unknown };
 const rows = <T,>(r: Row<T>): T[] => (r.error ? [] : r.data ?? []);
 
+interface ReviewRow {
+  id: string;
+  name: string | null;
+  company_name: string | null;
+  verification_status: string;
+  verification_submitted_at: string | null;
+  verification_checked_at: string | null;
+}
+
+/** Review statuses an admin can act on: checking needs agents.verify, the decision agents.approve. */
+const TO_CHECK = ["pending", "changes_pending"];
+const TO_DECIDE = ["checked", "changes_checked"];
+
 interface OnlinePaymentRow {
   id: string;
   agent_id: string;
@@ -46,9 +60,20 @@ interface OnlinePaymentRow {
 export async function buildNotifications(admin: AdminRecord): Promise<{ items: AdminNotification[]; counts: Record<"tickets" | "callbacks", number> }> {
   const support = can(admin, "support.reply");
   const payments = can(admin, "payments.view");
+  const reviewStatuses = [...(can(admin, "agents.verify") || can(admin, "agents.approve") ? TO_CHECK : []), ...(can(admin, "agents.approve") ? TO_DECIDE : [])];
   const none = Promise.resolve([]);
 
-  const [tickets, callbacks, online] = await Promise.all([
+  const [reviews, tickets, callbacks, online] = await Promise.all([
+    // Errors (e.g. before migration 0007) just mean no review notifications.
+    reviewStatuses.length
+      ? db()
+          .from("users")
+          .select("id,name,company_name,verification_status,verification_submitted_at,verification_checked_at")
+          .in("verification_status", reviewStatuses)
+          .order("verification_submitted_at", { ascending: false, nullsFirst: false })
+          .limit(LIMIT)
+          .then((r) => rows(r as Row<ReviewRow>))
+      : none,
     support
       ? db()
           .from("support_tickets")
@@ -90,6 +115,20 @@ export async function buildNotifications(admin: AdminRecord): Promise<{ items: A
   const plan = (p: string) => (p === "gold" ? "Gold" : p === "platinum" ? "Platinum" : p);
 
   const items: AdminNotification[] = [
+    ...reviews.map((u) => {
+      const agency = u.company_name?.trim() || u.name?.trim() || "An agent";
+      const checked = TO_DECIDE.includes(u.verification_status);
+      const changes = u.verification_status.startsWith("changes_");
+      const at = (checked ? u.verification_checked_at : u.verification_submitted_at) ?? u.verification_submitted_at ?? new Date(0).toISOString();
+      return {
+        id: `review:${u.id}:${u.verification_status}:${at}`,
+        kind: "verification" as const,
+        title: checked ? `${agency} is checked and ready to verify` : changes ? `${agency} changed verified details` : `New profile to review: ${agency}`,
+        body: checked ? "Give the final decision so the agent is notified." : "Review the details and verify the profile — the agent is waiting to hear back.",
+        at,
+        href: `/verifications/${u.id}`,
+      };
+    }),
     ...tickets.map((t) => {
       const isNew = t.last_reply_at === t.created_at || Date.parse(t.last_reply_at) - Date.parse(t.created_at) < 5000;
       return {

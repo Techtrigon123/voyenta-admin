@@ -58,8 +58,8 @@ export default async function VerificationsPage({ searchParams }: { searchParams
         title="Profile reviews"
         description={
           can(admin, "agents.approve")
-            ? "Sub-admins check each agent's business and bank details; you approve or deny. Agents can download PDFs only once approved."
-            : "Check each agent's business and bank details against their documents and mark them checked. A master admin gives the final approval."
+            ? "Check each agent's business and bank details, then verify or deny the profile. The agent is notified either way and can download PDFs only once verified."
+            : "Check each agent's business and bank details against their documents and mark them checked. An admin who can verify profiles gives the final decision."
         }
       />
       <NavBar

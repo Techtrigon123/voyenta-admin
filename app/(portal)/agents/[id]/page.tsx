@@ -139,7 +139,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
                 : sub.status === "active"
                   ? `${sub.cycle === "monthly" ? "Monthly" : "Yearly"} · ends ${formatDate(sub.expiresAt)}${sub.daysLeft !== null ? ` (${sub.daysLeft} days)` : ""}`
                   : sub.status === "grace"
-                    ? `Ended ${formatDate(sub.expiresAt)} · ${GRACE_DAYS[sub.cycle ?? "yearly"]}-day grace until ${formatDate(sub.graceEndsAt)}`
+                    ? `Ended ${formatDate(sub.expiresAt)} · ${GRACE_DAYS[sub.paidPlan ?? "gold"][sub.cycle ?? "yearly"]}-day grace until ${formatDate(sub.graceEndsAt)}`
                     : `Ended ${formatDate(sub.expiresAt)} — now on Silver`}
             </p>
           </Card>

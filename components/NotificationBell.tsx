@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bell, BellOff, Bug, IndianRupee, PhoneCall, Ticket, Volume2, VolumeX } from "lucide-react";
+import { BadgeCheck, Bell, BellOff, Bug, IndianRupee, PhoneCall, Ticket, Volume2, VolumeX } from "lucide-react";
 import { api } from "@/lib/client";
 import { cn, timeAgo } from "@/lib/utils";
 
@@ -14,7 +14,7 @@ import { cn, timeAgo } from "@/lib/utils";
  * the desktop sidebar and the mobile header share one poll and one chime.
  */
 
-type Kind = "ticket" | "bug" | "callback" | "payment";
+type Kind = "ticket" | "bug" | "callback" | "payment" | "verification";
 export interface AdminNotification {
   id: string;
   kind: Kind;
@@ -203,6 +203,7 @@ const KIND: Record<Kind, { icon: typeof Bell; tone: string; label: string }> = {
   bug: { icon: Bug, tone: "bg-rose-500/15 text-rose-300", label: "Bug" },
   callback: { icon: PhoneCall, tone: "bg-violet-500/15 text-violet-300", label: "Callback" },
   payment: { icon: IndianRupee, tone: "bg-amber-500/15 text-amber-300", label: "Payment" },
+  verification: { icon: BadgeCheck, tone: "bg-emerald-500/15 text-emerald-300", label: "Profile review" },
 };
 
 export function NotificationBell({ state, align = "left" }: { state: NotificationState; align?: "left" | "right" }) {

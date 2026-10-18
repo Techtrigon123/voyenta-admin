@@ -17,7 +17,7 @@ export default async function SettingsPage() {
       <Card className="mt-6">
         <CardTitle hint="Set in code — ask your developer to change">Fixed plan rules</CardTitle>
         <ul className="grid gap-2 text-sm sm:grid-cols-2">
-          <li className="rounded-xl bg-[var(--muted)] p-3">Grace period: <strong>{GRACE_DAYS.monthly} days</strong> (monthly) · <strong>{GRACE_DAYS.yearly} days</strong> (yearly)</li>
+          <li className="rounded-xl bg-[var(--muted)] p-3">Grace period: Gold <strong>{GRACE_DAYS.gold.monthly} / {GRACE_DAYS.gold.yearly} days</strong> · Platinum <strong>{GRACE_DAYS.platinum.monthly} / {GRACE_DAYS.platinum.yearly} days</strong> (monthly / yearly)</li>
           <li className="rounded-xl bg-[var(--muted)] p-3">Silver allowance: <strong>{FREE_MONTHLY_DOCUMENTS} new documents</strong> per month</li>
           <li className="rounded-xl bg-[var(--muted)] p-3">Services per plan: Silver 2 · Gold 4 (adds proforma invoices and air tickets) · Platinum 8 (receipts, pickups, placards and itineraries are Platinum-only)</li>
           <li className="rounded-xl bg-[var(--muted)] p-3">Legal contact (grievance officer): <code>lib/site.ts</code> in the Vouchlio app</li>

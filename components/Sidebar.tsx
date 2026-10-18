@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BadgeCheck,
   BarChart3,
+  CalendarClock,
   CreditCard,
   Inbox,
   LayoutDashboard,
@@ -48,6 +49,7 @@ const NAV: { heading: string; items: NavItem[] }[] = [
       { href: "/payments", label: "Plan payments", icon: CreditCard, permission: "payments.view", count: "payments" },
       { href: "/verifications", label: "Profile reviews", icon: BadgeCheck, permission: "agents.verify", count: "reviews" },
       { href: "/agents", label: "Agents", icon: Users, permission: "agents.view" },
+      { href: "/renewals", label: "Plan renewals", icon: CalendarClock, permission: "agents.view" },
       { href: "/tickets", label: "Support tickets", icon: Ticket, permission: "support.reply", count: "tickets" },
       { href: "/callbacks", label: "Callbacks", icon: PhoneCall, permission: "support.reply", count: "callbacks" },
       { href: "/contact", label: "Contact messages", icon: Inbox, permission: "contact.manage" },

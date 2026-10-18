@@ -14,8 +14,11 @@ export const DEFAULT_PRICES: Prices = {
   platinum: { monthly: 699, yearly: 6999 },
 };
 
-/** Fixed in the app's code and in approve_plan_payment() (migration 0005). */
-export const GRACE_DAYS: Record<BillingCycle, number> = { monthly: 2, yearly: 5 };
+/** Fixed in the app's code and in approve_plan_payment() (migration 0017). Keep in step with checkin-app/lib/agent/plans.ts. */
+export const GRACE_DAYS: Record<PaidPlanId, Record<BillingCycle, number>> = {
+  gold: { monthly: 2, yearly: 5 },
+  platinum: { monthly: 5, yearly: 10 },
+};
 export const FREE_MONTHLY_DOCUMENTS = 4;
 
 export const SERVICE_LABELS: Record<string, string> = {
@@ -54,7 +57,7 @@ export function subscriptionState(
   const cycle: BillingCycle = a.subscription_cycle === "monthly" ? "monthly" : "yearly";
   const expires = a.subscription_expires_at ? new Date(a.subscription_expires_at).getTime() : NaN;
   if (Number.isNaN(expires)) return { plan, paidPlan: plan, cycle, status: "active", expiresAt: null, graceEndsAt: null, daysLeft: null };
-  const graceEnds = expires + GRACE_DAYS[cycle] * DAY_MS;
+  const graceEnds = expires + GRACE_DAYS[plan][cycle] * DAY_MS;
   const base = { paidPlan: plan, cycle, expiresAt: new Date(expires).toISOString(), graceEndsAt: new Date(graceEnds).toISOString() };
   if (now < expires) return { ...base, plan, status: "active", daysLeft: Math.ceil((expires - now) / DAY_MS) };
   if (now < graceEnds) return { ...base, plan, status: "grace", daysLeft: Math.max(1, Math.ceil((graceEnds - now) / DAY_MS)) };

@@ -15,8 +15,8 @@ export const PERMISSIONS = {
   "payments.refund": "Issue refunds (online payments through Razorpay) and record UPI refunds",
   // Agents
   "agents.view": "Search and view agent profiles",
-  "agents.verify": "Check agent profile details (first review)",
-  "agents.approve": "Approve or deny agent profiles (final decision)",
+  "agents.verify": "Review agent profiles and mark them checked",
+  "agents.approve": "Verify or deny agent profiles",
   "agents.notes": "Add internal notes on agents",
   "agents.reset_link": "Create password-reset links for agents",
   "agents.unlock": "Unlock rate-limited agent accounts",
@@ -46,6 +46,7 @@ export const SUB_DEFAULT: Permission[] = [
   "payments.check",
   "agents.view",
   "agents.verify",
+  "agents.approve",
   "agents.notes",
   "agents.reset_link",
   "support.reply",
