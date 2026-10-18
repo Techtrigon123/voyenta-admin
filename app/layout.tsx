@@ -9,10 +9,17 @@ import { NavigationTracker } from "@/components/BackButton";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
+const description = "The Vouchlio team portal: profile reviews, plan payments, renewals, agents and support. Staff sign-in only.";
+
 export const metadata: Metadata = {
+  // Absolute URLs for the link-preview image (set ADMIN_APP_URL on Vercel if the domain changes).
+  metadataBase: new URL(process.env.ADMIN_APP_URL || "https://admin.vouchlio.com"),
   title: { default: "Vouchlio Admin", template: "%s · Vouchlio Admin" },
+  description,
   robots: { index: false, follow: false },
   icons: { icon: "/brand/vouchlio-mark.png" },
+  openGraph: { type: "website", locale: "en_IN", siteName: "Vouchlio Admin", title: "Vouchlio Admin", description },
+  twitter: { card: "summary_large_image", title: "Vouchlio Admin", description },
 };
 
 export const viewport: Viewport = { themeColor: "#0a0a0a" };

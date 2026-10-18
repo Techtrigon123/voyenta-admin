@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Vouchlio">
+  <path d="M128 32H384A96 96 0 0 1 480 128V212A44 44 0 0 0 480 300V384A96 96 0 0 1 384 480H128A96 96 0 0 1 32 384V300A44 44 0 0 0 32 212V128A96 96 0 0 1 128 32Z" fill="#FFFFFF"/>
+  <path d="M138 150H210L256 296L302 150H374L292 368H220Z" fill="#E63946"/>
+</svg>

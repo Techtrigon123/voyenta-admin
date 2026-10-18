@@ -96,7 +96,8 @@ export async function proxy(req: NextRequest) {
 }
 
 export const config = {
-  // Static files that must load without a session: build assets, the image optimiser, and the public
-  // logo in /brand (the login page shows it, and the optimiser fetches it without cookies).
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|brand/).*)"],
+  // Static files that must load without a session: build assets, the image optimiser, the public
+  // logo in /brand (the login page shows it, and the optimiser fetches it without cookies), and the
+  // link-preview image that WhatsApp, Slack and email apps fetch without signing in.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt|manifest.webmanifest|brand/|opengraph-image).*)"],
 };

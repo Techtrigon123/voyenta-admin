@@ -10,7 +10,7 @@ export type Prices = Record<PaidPlanId, Record<BillingCycle, number>>;
 
 /** Default prices (INR, GST inclusive) — used unless a master sets others in Settings. */
 export const DEFAULT_PRICES: Prices = {
-  gold: { monthly: 199, yearly: 1999 },
+  gold: { monthly: 299, yearly: 1999 },
   platinum: { monthly: 699, yearly: 6999 },
 };
 
